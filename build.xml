@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Burdee" default="stage">
+	
+	<property name="source.dir" value="src/main/java"/>
+	<property name="resources.dir" value="src/main/resources"/>
+	<property name="build.dir" value="build"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="dist.dir" value="dist"/>
+	<property name="stage.dir" value="stage"/>
+	<property name="jar.name" value="burdee.jar"/>
+	
+	<path id="compile.classpath">
+		<fileset dir="${lib.dir}">
+		    <include name="*.jar"/>
+		</fileset>
+	</path>
+	
+	<target name="clean" description="Cleans the build and stage directories.">
+		<delete dir="${build.dir}" includeemptydirs="true"/>
+		<delete dir="${stage.dir}" includeemptydirs="true"/>
+	</target>
+	
+	<target name="init" description="Creates the build directory.">
+		<mkdir dir="${build.dir}"/>
+	</target>
+	
+	<target name="compile" depends="clean,init">
+		<javac 
+			srcdir="${source.dir}" 
+			destdir="${build.dir}" 
+			classpathref="compile.classpath"/>
+		<copy todir="${build.dir}">
+			<fileset dir="${resources.dir}">
+			    <include name="**"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="stage" depends="compile">
+		<mkdir dir="stage"/>
+		<copy todir="${stage.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+		
+		<manifestclasspath property="jar.classpath" jarfile="${stage.dir}/${jar.name}">
+			<classpath>
+				<fileset dir="${stage.dir}">
+				    <include name="lib/*.jar"/>
+				</fileset>
+			</classpath>
+		</manifestclasspath>
+		
+		<manifest file="${build.dir}/manifest">
+			<attribute name="Main-Class" value="ca.burdee.BurdeeApplication"/>
+			<attribute name="Class-Path" value="${jar.classpath}"/>
+		</manifest>
+		
+		<jar destfile="${stage.dir}/${jar.name}" 
+			basedir="${build.dir}" 
+			manifest="${build.dir}/manifest"/>
+	</target>
+	
+</project>
